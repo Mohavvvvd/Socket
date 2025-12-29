@@ -1,0 +1,116 @@
+package Socket;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.ConnectException;
+import java.util.Base64;
+import java.util.UUID;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
+/**
+ * Client sécurisé correspondant - CORRIGÉ
+ */
+class SecureClient {
+    // ⚠️ IMPORTANT : Doit être IDENTIQUE au serveur
+    private static final String SECRET_KEY = "VotreCleSuperSecrete2025!";
+    private static final String SERVER_HOST = "localhost";
+    private static final int SERVER_PORT = 6443; // ✅ CORRIGÉ : même port que le serveur
+    
+    public static void main(String[] args) {
+        try {
+            // Créer contexte SSL (en production, vérifier le certificat!)
+            SSLContext sslContext = createTrustAllSSLContext();
+            SSLSocketFactory factory = sslContext.getSocketFactory();
+            
+            System.out.println("🔄 Connexion au serveur " + SERVER_HOST + ":" + SERVER_PORT + "...");
+            
+            try (SSLSocket socket = (SSLSocket) factory.createSocket(SERVER_HOST, SERVER_PORT);
+                 BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
+                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
+                 BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"))) {
+                
+                System.out.println("✅ Client Sécurisé connecté à " + SERVER_HOST + ":" + SERVER_PORT);
+                System.out.println("🔐 Chiffrement: " + socket.getSession().getProtocol());
+                System.out.println("🔐 Cipher Suite: " + socket.getSession().getCipherSuite());
+                System.out.println("\nTapez vos messages (exit pour quitter)\n");
+                
+                String message;
+                while (true) {
+                    System.out.print("📤 > ");
+                    message = console.readLine();
+                    
+                    if (message == null || "exit".equalsIgnoreCase(message.trim())) {
+                        System.out.println("👋 Déconnexion...");
+                        break;
+                    }
+                    
+                    // Créer un message sécurisé
+                    String secureMessage = createSecureMessage(message);
+                    out.write(secureMessage + "\r\n");
+                    out.flush();
+                    
+                    // Lire la réponse
+                    String response = in.readLine();
+                    
+                    if (response.startsWith("OK:")) {
+                        System.out.println("✅ Serveur: " + response + "\n");
+                    } else {
+                        System.out.println("❌ Serveur: " + response + "\n");
+                    }
+                }
+            }
+            
+        } catch (ConnectException e) {
+            System.err.println("❌ ERREUR: Impossible de se connecter au serveur");
+            System.err.println("   Vérifiez que le serveur est démarré sur le port " + SERVER_PORT);
+        } catch (Exception e) {
+            System.err.println("❌ Erreur: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Crée un message sécurisé au format: NONCE|TIMESTAMP|MESSAGE|HMAC
+     */
+    private static String createSecureMessage(String message) throws Exception {
+        String nonce = UUID.randomUUID().toString();
+        long timestamp = System.currentTimeMillis();
+        String data = nonce + "|" + timestamp + "|" + message;
+        String hmac = calculateHMAC(data, SECRET_KEY);
+        
+        return data + "|" + hmac;
+    }
+    
+    private static String calculateHMAC(String data, String secret) throws Exception {
+        Mac mac = Mac.getInstance("HmacSHA256");
+        SecretKeySpec keySpec = new SecretKeySpec(secret.getBytes("UTF-8"), "HmacSHA256");
+        mac.init(keySpec);
+        byte[] hmacBytes = mac.doFinal(data.getBytes("UTF-8"));
+        return Base64.getEncoder().encodeToString(hmacBytes);
+    }
+    
+    /**
+     * Crée un contexte SSL qui accepte tous les certificats (TEST UNIQUEMENT!)
+     * En production, utiliser un truststore approprié
+     */
+    private static SSLContext createTrustAllSSLContext() throws Exception {
+        SSLContext ctx = SSLContext.getInstance("TLSv1.3");
+        ctx.init(null, new TrustManager[]{
+            new X509TrustManager() {
+                public java.security.cert.X509Certificate[] getAcceptedIssuers() { return null; }
+                public void checkClientTrusted(java.security.cert.X509Certificate[] c, String a) {}
+                public void checkServerTrusted(java.security.cert.X509Certificate[] c, String a) {}
+            }
+        }, new java.security.SecureRandom());
+        return ctx;
+    }
+}
