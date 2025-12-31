@@ -83,7 +83,7 @@ keytool -genkeypair -alias serverkey -keyalg RSA -keysize 2048 \
 
 ```bash
 # Si vous utilisez Git
-git clone <votre-repo>
+git clone https://github.com/Mohavvvvd/Socket.git
 cd Socket
 
 # Ou importez le projet dans Eclipse
