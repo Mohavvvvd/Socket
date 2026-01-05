@@ -34,7 +34,7 @@ public class SecureClient {
     // ═══════════════════════════════════════════════════════════
     // CONFIGURATION - Doit correspondre au serveur
     // ═══════════════════════════════════════════════════════════
-    private static final String SECRET_KEY = "VotreCleSuperSecrete2025!";
+    private static final String SECRET_KEY = "CleSuperSecrete2026!";
     private static final String SERVER_HOST = "localhost";
     private static final int SERVER_PORT = 6443;
     private static final int CONNECTION_TIMEOUT = 5000; // 5 secondes
