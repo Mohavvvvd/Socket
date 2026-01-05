@@ -155,7 +155,7 @@ public class SecureServer {
      */
     private static SSLServerSocket createTLSServerSocket(int port) throws Exception {
         // Charger le keystore
-        char[] keystorePassword = "changeit".toCharArray();
+        char[] keystorePassword = "KeyStore".toCharArray();
         KeyStore keystore = KeyStore.getInstance("JKS");
         
         try (FileInputStream fis = new FileInputStream("serverkeystore.jks")) {
