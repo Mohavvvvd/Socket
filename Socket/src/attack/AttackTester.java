@@ -32,7 +32,7 @@ public class AttackTester {
     
     private static final String SERVER_HOST = "localhost";
     private static final int SERVER_PORT = 6443;
-    private static final String SECRET_KEY = "VotreCleSuperSecrete2025!";
+    private static final String SECRET_KEY = "CleSuperSecrete2026!";
     
     public static void main(String[] args) throws Exception {
         printBanner();
