@@ -29,7 +29,7 @@ public class SecureServer {
     // ═══════════════════════════════════════════════════════════
     // CONFIGURATION SÉCURITÉ
     // ═══════════════════════════════════════════════════════════
-    private static final String SECRET_KEY = "VotreCleSuperSecrete2025!";
+    private static final String SECRET_KEY = "CleSuperSecrete2026!";
     private static final int PORT = 6443;
     private static final int READ_TIMEOUT_MS = 5000; // Réduit pour plus de réactivité
     private static final int BYTE_TIMEOUT_MS = 2000; // Timeout entre chaque octet
